@@ -11,7 +11,7 @@ from __future__ import print_function
 
 from scipy.spatial import distance
 import numpy as np
-from gensim import corpora, models
+from gensim import corpora, models, matutils
 import sklearn.datasets
 import nltk.stem
 from collections import defaultdict
@@ -77,21 +77,18 @@ model = models.ldamodel.LdaModel(
                   id2word=corpus.id2word,
                   alpha=None)
 
-thetas = np.zeros((len(texts), 100))
-for i, c in enumerate(corpus):
-    for ti, v in model[c]:
-        thetas[i, ti] += v
+topics = matutils.corpus2dense(model[corpus], num_terms = model.num_topics)
+pairwise = distance.squareform(distance.pdist(topics))
+largest = pairwise.max()
 
-distances = distance.squareform(distance.pdist(thetas))
-large = distances.max() + 1
-for i in range(len(distances)):
-    distances[i, i] = large
+for i in range(len(topics)):
+    pairwise[i, i] = largest+1
 
 print(otexts[1])
 print()
 print()
 print()
-print(otexts[distances[1].argmin()])
+print(otexts[pairwise[1].argmin()])
 
         
 
